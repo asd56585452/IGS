@@ -1,7 +1,7 @@
 # [CVPR25] Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene
 
 >Jinbo Yan, Rui Peng, Zhiyan Wang, Luyang Tang, Jiayu Yang, Jie Liang, Jiahao Wu, Ronggang Wang<br>
->[Arxiv](https://arxiv.org/pdf/2412.06299)|[Datasets](https://yjb6.github.io/SaRO-GS.github.io/)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
+>[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
 > *CVPR 25* 
 
 This repository contains the official authors implementation associated with the paper: __Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene__
@@ -13,13 +13,15 @@ coming soon
 
 ## Installation
 - clone
-    git clone 
+    ```
+    git clone https://github.com/yjb6/IGS.git --revursive
+    ```
 - Python >= 3.9
 - Install `PyTorch >= 2.0.0`. We have tested on `torch2.0.0+cu118`, but other versions should also work fine.
 - Install gaussian_rasterization. We use a variant of the Rade-GS renderer.
-```sh
-pip install submodels/Rade-GS/submodules/diff-gaussian-rasterization-clamp
-```
+    ```sh
+    pip install submodels/Rade-GS/submodules/diff-gaussian-rasterization-clamp
+    ```
 
 
 
