@@ -234,7 +234,6 @@ def infer(cfg):
         pred_images = torch.clamp(pred_images,0,1)
         psnr = -10 * torch.log10(torch.mean((pred_images.detach() - gt_images) ** 2, dim=(1,2,3,4)))
         psnrs += psnr.tolist()
-        print(psnr)
 
         depth_pred = out['depth_pred'][-1:,1:].squeeze(2)
         stream_gs = out["3dgs"][-1]
@@ -321,7 +320,6 @@ def infer(cfg):
 
                 gt_images = gt_images[-1].detach()
                 psnr = -10 * torch.log10(torch.mean((render_image - gt_images) ** 2))
-                print(psnr)
                 psnrs[-1] = psnr.item()
 
                 out_images[-1] = render_image.detach().cpu()
