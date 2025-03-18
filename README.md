@@ -18,6 +18,7 @@ coming soon
     ```
 - Python >= 3.9
 - Install `PyTorch >= 2.0.0`. We have tested on `torch2.0.0+cu118`, but other versions should also work fine.
+- Install **torch_cluster** by following the instructions provided in the official repository: [pytorch_cluster](https://github.com/rusty1s/pytorch_cluster).
 - Install gaussian_rasterization. We use a variant of the Rade-GS renderer.
     ```sh
     pip install submodels/Rade-GS/submodules/diff-gaussian-rasterization-clamp
