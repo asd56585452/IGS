@@ -1,0 +1,6 @@
+[submodule "submodules/RaDe-GS/submodules/diff-gaussian-rasterization/third_party/glm"]
+	path = submodules/RaDe-GS/submodules/diff-gaussian-rasterization/third_party/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "submodules/RaDe-GS/submodules/compress-diff-gaussian-rasterization/third_party/glm"]
+	path = submodules/RaDe-GS/submodules/compress-diff-gaussian-rasterization/third_party/glm
+	url = https://github.com/g-truc/glm.git
