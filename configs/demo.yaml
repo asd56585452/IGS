@@ -17,7 +17,7 @@ data:
     scene_type: "n3d"
     need_rays: True
     max_sh_degree: 3
-    start_gs_path: "Your Root Dir/release/sear_steak/colmap_0/start_gs/point_cloud/iteration_6000_compress/point_cloud.ply"
+    start_gs_path: "${data.data.root_dir}/sear_steak/colmap_0/${data.data.gs_mode}/point_cloud/${data.data.iter}_compress/point_cloud.ply"
     
 opt:
   lambda_lpips: 0
