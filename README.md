@@ -75,7 +75,9 @@ python infer_batch.py --config configs/demo.yaml
 • Feel free to adjust the hyperparameters, such as `refine_iterations` and `max_num`.
 #### Step 3: Generate Videos  
 Use this [script](script/video.ipynb) to convert the rendered images into a video.
-## Testing
+
+## Streaming Reconstruction
+
 ### Data Preparation
 #### Step 1: Prepare Inputs
 <a name="step1-prepare-inputs"></a>
@@ -162,7 +164,7 @@ python infer_batch.py  --config <path to config>
 - We have provided the relevant configurations for **N3DV** and **Meeting Room**, and the details can be found in [configs](configs).
 
 
-## Training
+## Train AGM-Net
 ### Datasets Preparation
 #### Our Training Dataset
 Download our [processed data](https://huggingface.co/datasets/yjb6/IGS_data) from 4 sequences of N3DV, which can be directly used for training. It contains 1,200 optimized Gaussian points and requires 150GB of storage space.
