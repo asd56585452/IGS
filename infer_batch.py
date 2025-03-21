@@ -43,15 +43,13 @@ def forward_single_view(
     sh_degree = 3,
     # need_depth = False,
     ):
-    # with torch.autocast(device_type=self.device.type, dtype=torch.float32):
         ret = {}
         
         bg_color = background_color
-        # print(background_color)
+
         # Set up rasterization configuration
         tanfovx = math.tan(viewpoint_camera.FoVx * 0.5)
         tanfovy = math.tan(viewpoint_camera.FoVy * 0.5)
-        # if ret_rgb:
         screenspace_points = torch.zeros_like(gs.get_xyz, dtype=gs.get_xyz.dtype, requires_grad=True, device="cuda") + 0
         try:
             screenspace_points.retain_grad()
@@ -85,7 +83,6 @@ def forward_single_view(
 
         means2D = screenspace_points.contiguous().float()
         opacity = gs.get_opacity
-        # .contiguous().float()
 
         # If precomputed 3d covariance is provided, use it. If not, then it will be computed from
         # scaling / rotation by the rasterizer.
@@ -131,11 +128,9 @@ def test_rendering_speed(batch):
     gs_model = batch["gs"][0]
     for i in range(view_num):
         c2w = batch['c2w_output'][0,i]#不能用test view
-        # gt_image = batch['images_output'][0,i]
 
         FOV = batch['FOV'][0]
         bg = batch['background_color'][0]
-        # print(c2w, FOV)
         cam = Camera.from_c2w(c2w, FOV,  batch['resolution'][0])
         cam_list.append(cam)
 
@@ -350,15 +345,15 @@ def infer(cfg):
 
 
 
-    print(psnrs,np.mean(psnrs))
+    print("avg psnrs:", np.mean(psnrs))
     total_time = pbar.format_dict['elapsed'] # use all the time, same with the paper report
     print("total time", total_time)
+    print("per frame train time:", total_time/len(psnrs))
     result = {'psnr':{f"frame_{i+1}": psnrs[i] for i in range(len(psnrs))}, "avg":np.mean(psnrs), "total_time":total_time,"mask_num":mask_num, "points_num":points_num, "fps":fps,"per_frame_times":perframe_times}
     resultes_path = f'{cfg.opt.workspace}/results.json'
     with open(resultes_path, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False,indent=4)
     os.makedirs(f'{cfg.opt.workspace}/eval_pred/', exist_ok=True)
-    print(len(out_images))
     for idx, img in enumerate(out_images):
         torchvision.utils.save_image(img, f'{cfg.opt.workspace}/eval_pred/train_pred_images_{idx+1}.png')
     

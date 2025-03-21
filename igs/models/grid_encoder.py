@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from igs.utils.ops import project_imagefeatures_to_3d, scale_tensor_batch, select_points_bbox, perspective_projection, points_projection
-from torch_scatter import scatter_mean, scatter_max
+# from torch_scatter import scatter_mean, scatter_max
 from igs.utils.base import BaseModule
 from dataclasses import dataclass, field
 from einops import rearrange

@@ -5,12 +5,12 @@ import torch
 import torch.nn.functional as F
 from torch.autograd import Function
 from torch.cuda.amp import custom_bwd, custom_fwd
-from pytorch3d import io
-from pytorch3d.renderer import (
-    PointsRasterizationSettings, 
-    PointsRasterizer)
-from pytorch3d.structures import Pointclouds
-from pytorch3d.utils.camera_conversions import cameras_from_opencv_projection
+# from pytorch3d import io
+# from pytorch3d.renderer import (
+#     PointsRasterizationSettings, 
+#     PointsRasterizer)
+# from pytorch3d.structures import Pointclouds
+# from pytorch3d.utils.camera_conversions import cameras_from_opencv_projection
 import cv2
 from igs.utils.graphics_utils import getWorld2View2, focal2fov, fov2focal
 

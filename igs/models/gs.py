@@ -35,11 +35,11 @@ from igs.utils.graphics_utils import BasicPointCloud, fov2focal
 from igs.utils.general_utils import inverse_sigmoid, get_expon_lr_func, strip_symmetric, build_scaling_rotation, build_rotation, hook_fn, quaternion_multiply, quaternion_to_rotation_vector, rotation_vector_to_quaternion
 # from mmcv.ops import knn
 import math
-from diff_gaussian_rasterization_rade import GaussianRasterizationSettings as GaussianRasterizationSettings_rade, GaussianRasterizer as GaussianRasterizer_rade
+# from diff_gaussian_rasterization_rade import GaussianRasterizationSettings as GaussianRasterizationSettings_rade, GaussianRasterizer as GaussianRasterizer_rade
 from diff_gaussian_rasterization_rade_clamp import GaussianRasterizationSettings as GaussianRasterizationSettings_rade_clamp, GaussianRasterizer as GaussianRasterizer_rade_clamp
 
 from torch_cluster import fps, knn
-from torch_scatter import scatter_mean, scatter_max
+# from torch_scatter import scatter_mean, scatter_max
 from icecream import ic
 
 

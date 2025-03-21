@@ -44,15 +44,6 @@ def _parse_scene_list(scene_list_path: Union[str, List[str]]):
 
 
 
-
-    # cam_centers = []
-
-    # for cam in cam_info:
-    #     W2C = getWorld2View2(cam.R, cam.T)
-    #     C2W = np.linalg.inv(W2C)
-    #     cam_centers.append(C2W[:3, 3:4])
-
-
 def build_rays(c2ws, ixts, H, W, scale=1.0):
 
     H, W = int(H*scale), int(W*scale)

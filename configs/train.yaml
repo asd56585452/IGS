@@ -1,0 +1,227 @@
+data:
+
+  data_cls: igs.data.data.N3dDataset
+  data:
+    background_color: [0.0, 0.0, 0.0]
+
+    data_path: "N3D_train_gap_10.json"
+
+    output_height: 1014
+    output_width: 1352
+
+    input_height: 512
+    input_width: 512
+
+    root_dir: "path to IGS_data"
+    num_input_views: 4
+    num_output_views: 8
+    gs_mode: "3dgs_rade"
+    iter: "10000_compress"
+    up_sample: ${system.up_sample}
+    use_group: True
+    use_gstream: ${gt0:${opt.lambda_gstream}}
+    max_sh_degree: 3
+
+opt:
+  compute_environment: LOCAL_MACHINE
+  # debug: false
+  distributed_type: MULTI_GPU
+  downcast_bf16: 'no'
+  machine_rank: 0
+  main_training_function: main
+  mixed_precision: fp16
+  num_machines: 1
+  num_processes: 4
+  rdzv_backend: static
+  same_network: true
+  tpu_env: []
+  tpu_use_cluster: false
+  tpu_use_sudo: false
+  use_cpu: false
+  gradient_accumulation_steps : 1
+
+  data_mode: 's3'
+  # batch_size: 32
+  lr:  4e-4
+  num_workers: 4
+  batch_size: 4
+  num_epochs: 30
+  workspace: 'logs/${opt.project}/${opt.exp_name}'
+
+  # workspace: '/workspace'
+
+  gradient_clip: 1.0
+
+  # debug: true
+  project: "igs"
+ 
+  exp_name : "test_release"
+
+  start_epoch: 0
+
+  lambda_lpips: 0
+  lambda_ssim: 0.2
+  lambda_flow: 0
+  lambda_render_flow: 0
+  lambda_rgb: 1
+  lambda_gstream: 0
+  lambda_rigid: 0
+
+  debug: false
+
+system:
+
+  local_ray: False
+  backbone_cls: igs.models.unimatch.unimatch.UniMatch
+  up_sample: True
+  use_gs_emb: False
+  backbone:
+    pretrained_model_name_or_path: "ckpt/gmflow/gmflow-scale1-mixdata-train320x576-4c3a6e9a.pth"
+
+
+    feature_channels: 128
+    num_scales: 1
+
+    n_blocks: 5
+    radius: 1.
+    transformer_cls: igs.models.unimatch.transformer.FeatureTransformer
+    transformer:
+      num_layers: 6
+      d_model: ${system.backbone.feature_channels}
+      nhead: 1
+      ffn_dim_expansion: 4
+
+  transformer_cls: igs.models.unimatch.transformer.FeatureTransformerMy
+  transformer:
+      num_layers: 1
+      d_model: ${system.backbone.feature_channels}
+      nhead: 1
+      ffn_dim_expansion: 4 
+
+  renderer_emb_cls: igs.models.gs.GS3DRendererEmbbed
+  renderer_emb:
+    grid_type: ${system.triplane_encoder.grid_type}
+    out_channels: 128
+    sh_embedding: False
+    norm_emb: True
+    neighbor_size: 8
+    mlp_network_config:
+      n_neurons: 64
+      n_hidden_layers: 2
+      activation: silu
+    
+    use_pointbert: False
+    pointbert:
+        trans_dim: 384
+        depth: 4
+        drop_path_rate: 0.1
+        cls_dim: 40
+        num_heads: 6
+        group_size: 32
+        num_group: 8192
+        encoder_dims: 256
+        pretrained_model_name_or_path: "ckpt/Point-BERT.pth"
+    bert_mlp_network_config:
+      n_neurons: 256
+      n_hidden_layers: 1
+      activation: silu
+    weights_type: ""
+    anchor_opacity_mask: true
+
+  combine_net_cls: igs.models.networks.CombineNet
+  combine_net:
+    in_channels_1: ${system.backbone.feature_channels}
+    in_channels_2: ${system.renderer_emb.out_channels}
+    out_channels: 128
+
+    unet_cls: igs.models.unet_lgm.UNet
+    unet:
+      in_channels: ${system.combine_net.out_channels}
+      out_channels: ${system.triplane_encoder.in_channels}
+
+      down_channels: [128, 256] #, 1024]
+      down_attention: [False, False]
+      mid_attention: false
+    
+      up_channels: [ 256,128]
+      up_attention: [ False, False]
+
+      num_views: ${data.data.num_input_views}
+      layers_per_block:  1
+
+      use_conv_in: True
+
+  triplane_encoder_cls: igs.models.grid_encoder.GridEncoder
+  triplane_encoder:
+    plane_size: 48
+    in_channels: 128
+    out_channels: 128
+    num_views: ${data.data.num_input_views}
+
+    combine_type: "mask"
+    grid_type: "irgrid"
+    proj_type: "perspective_projection"
+    use_gs_emb: ${system.use_gs_emb}
+    res_cat: False
+
+
+    unet_cls: igs.models.transformers.Transformer1D
+    unet:
+      in_channels: 128 # 128+128
+
+      num_attention_heads: 8
+      attention_head_dim: 64
+      num_layers: 4
+
+      norm_type: "layer_norm"
+      enable_memory_efficient_attention: false
+      gradient_checkpointing: false
+      
+    transformer_cls: igs.models.transformers.Transformer1D
+    transformer:
+      in_channels: 256 # 128+128
+
+      num_attention_heads: 8
+      attention_head_dim: 64
+      num_layers: 1
+      norm_type: "layer_norm"
+      enable_memory_efficient_attention: false
+      gradient_checkpointing: false
+    
+    camera_embedder_cls: igs.models.networks.MLP
+    camera_embedder:
+      dim_in: 16  # c2w + [fx, fy, cx, cy]
+      dim_out: 128
+      n_neurons: 128
+      n_hidden_layers: 1
+      activation: silu
+
+
+
+  renderer_cls: igs.models.gs.GS3DRenderer
+  renderer:
+    sh_degree: 3
+    radius: 0.6
+    mlp_network_config:
+      n_neurons: ${system.renderer.in_channels}
+      n_hidden_layers: 2
+      activation: silu
+    # gs_out:
+    in_channels: ${system.triplane_encoder.out_channels}
+    xyz_offset: true
+    restrict_offset: true
+    use_rgb: false
+    neighbor_size: ${system.renderer_emb.neighbor_size}
+    feature_channels:
+        xyz: 3
+        rotation: 4
+
+    clip_scaling: 0.2
+    xyz_scale: 0.02
+    feature_mode: ${system.triplane_encoder.grid_type}
+    render_flow: ${gt0:${opt.lambda_render_flow}}
+    ret_rgb: True
+    interpolate_first: True
+    lbs: False
+
+    

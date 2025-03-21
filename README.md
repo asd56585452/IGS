@@ -1,7 +1,7 @@
-# [CVPR25] Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene
+# Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene [CVPR25] 
 
 >Jinbo Yan, Rui Peng, Zhiyan Wang, Luyang Tang, Jiayu Yang, Jie Liang, Jiahao Wu, Ronggang Wang<br>
->[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
+>Arxiv(coming soon)|[Datasets](https://huggingface.co/datasets/yjb6/IGS_data)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
 > *CVPR 25* 
 
 This repository contains the official authors implementation associated with the paper: __Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene__
@@ -18,12 +18,18 @@ coming soon
     ```
 - Python >= 3.9
 - Install `PyTorch >= 2.0.0`. We have tested on `torch2.0.0+cu118`, but other versions should also work fine.
+    ```sh
+    pip install torch==2.0.0 torchvision==0.15.1 torchaudio==2.0.1 --index-url https://download.pytorch.org/whl/cu118
+
+    ```
 - Install **torch_cluster** by following the instructions provided in the official repository: [pytorch_cluster](https://github.com/rusty1s/pytorch_cluster).
 - Install gaussian_rasterization. We use a variant of the Rade-GS renderer.
     ```sh
-    pip install submodels/Rade-GS/submodules/diff-gaussian-rasterization-clamp
-    ```
+    pip install submodules/RaDe-GS/submodules/diff-gaussian-rasterization-clamp/
 
+    pip install submodules/RaDe-GS/submodules/diff-gaussian-rasterization/
+    ```
+- Follow [3DGS](https://github.com/graphdeco-inria/gaussian-splatting) to install simple-knn
 
 
 
@@ -32,7 +38,7 @@ coming soon
 
 ## Demo
 #### Step 1: Donwnload the prepared [Data](https://drive.google.com/file/d/1uPhqkUE4vJhialpG1DC8uK-CkmiEjQe8/view?usp=drive_link) and [CKPT](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)
-##### Extract the Prepared Data
+Extract the Prepared Data
 ```
 .
 ├── bbox.json
@@ -46,7 +52,7 @@ coming soon
 │   │   └── images_r2
 └── sear_steak_total_50_interval_5.json
 ```
-##### Extract the ckpt under the code directory
+Extract the ckpt under the code directory
 
 ```
 .
@@ -68,6 +74,7 @@ Use this [script](script/video.ipynb) to convert the rendered images into a vide
 ## Testing
 ### Data Preparation
 #### Step 1: Prepare Inputs
+<a name="step1-prepare-inputs"></a>
 We can prepare our streaming dataset following 3DGStream and SpacetimeGaussian, and here we provide a simple script.
 ```sh
 cd script
@@ -87,6 +94,13 @@ Then you will get:
 In this step, we recommend first optimizing the Gaussian model for several thousand iterations using ​RaDe-GS, followed by compressing the Gaussian points with ​LightGaussian. This process ensures an efficient and high-quality reconstruction of the 3D scene.
 
 To facilitate this, we provide a script that includes the ​RaDe-GS training process, ​LightGaussian compression, and ​rendering. Before running the script, make sure to adjust the `YOUR_PATH` parameter to match your specific directory structure.
+
+Install the submodules:
+```
+pip install submodules/RaDe-GS/submodules/diff-gaussian-rasterization-clamp/
+pip install submodules/RaDe-GS/submodules/compress-diff-gaussian-rasterization/
+```
+Train:
 ```sh
 cd submodules/RaDe-GS
 ./train.sh
@@ -144,11 +158,47 @@ python infer_batch.py  --config <path to config>
 - We have provided the relevant configurations for **N3DV** and **Meeting Room**, and the details can be found in [configs](configs).
 
 
-## Training(Coming Soon)
-<!-- ### Datasets Preparation
+## Training
+### Datasets Preparation
 #### Our Training Dataset
-####  -->
+Download our [processed data](https://huggingface.co/datasets/yjb6/IGS_data) from 4 sequences of N3DV, which can be directly used for training. It contains 1,200 optimized Gaussian points and requires 150GB of storage space.
+
+After extraction, the directory structure is as follows:
+```
+.
+└── IGS_data
+    ├── bbox.json
+    ├── coffee_martini_colmap
+    ├── cook_spinach_colmap
+    ├── flame_salmon_1
+    ├── flame_steak_colmap
+    └── N3D_train_gap_10.json
+```
+#### Prepare More Dataset
+You can prepare additional data following:
+##### Step 1: 
+Follow the [tutorial](step1-prepare-inputs) to prepare the extracted images from multi-view video.
+##### Step 2: 
+For each frame, reconstruct the corresponding Gaussians and perform rendering. We provide a script that supports multi-GPU parallel processing for Gaussian point reconstruction, compression, and rendering. 
+**Remember to change the parameters in the code.**
+```
+python build_3dgs_dataset.py
+```
+##### Step 3:  
+Generate training pairs, camera groups, and bounding boxes by executing the provided [script](script/generate_train_pair.ipynb).
+
+### Run
+```
+accelerate launch --config_file acc_cfg/default_config.yaml main.py --config configs/train.yaml 
+```
 
 
-## Thanks
-Our code is based on [3DGStream](https://github.com/SJoJoK/3DGStream) and [LGM](https://github.com/3DTopia/LGM?tab=readme-ov-file).
+## Acknowledgments  
+Our work builds upon the following open-source projects and their contributions:  
+• [3DGStream](https://github.com/SJoJoK/3DGStream)  
+• [LGM](https://github.com/3DTopia/LGM?tab=readme-ov-file)  
+• [3DGS](https://github.com/graphdeco-inria/gaussian-splatting)  
+• [Rade-GS](https://github.com/BaowenZ/RaDe-GS)  
+• [LightGaussian](https://github.com/VITA-Group/LightGaussian)  
+
+We are deeply grateful to the authors and communities behind these projects for their valuable work and inspiration.
