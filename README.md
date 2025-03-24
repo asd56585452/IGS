@@ -1,14 +1,22 @@
 # Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene [CVPR25] 
 
 >Jinbo Yan, Rui Peng, Zhiyan Wang, Luyang Tang, Jiayu Yang, Jie Liang, Jiahao Wu, Ronggang Wang<br>
->Arxiv(coming soon)|[Datasets](https://huggingface.co/datasets/yjb6/IGS_data)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
+>[Arxiv](https://arxiv.org/pdf/2503.16979)|[Datasets](https://huggingface.co/datasets/yjb6/IGS_data)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
 > *CVPR 25* 
 
 This repository contains the official authors implementation associated with the paper: __Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene__
 
 ## Bibtex
 ```
-coming soon
+@misc{yan2025instantgaussianstreamfast,
+      title={Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene Reconstruction via Gaussian Splatting}, 
+      author={Jinbo Yan and Rui Peng and Zhiyan Wang and Luyang Tang and Jiayu Yang and Jie Liang and Jiahao Wu and Ronggang Wang},
+      year={2025},
+      eprint={2503.16979},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2503.16979}, 
+}
 ```
 
 ## Installation
