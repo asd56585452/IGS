@@ -1,4 +1,4 @@
-# Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene [CVPR25] 
+# Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene Reconstruction via Gaussian Splatting [CVPR25] 
 
 >Jinbo Yan, Rui Peng, Zhiyan Wang, Luyang Tang, Jiayu Yang, Jie Liang, Jiahao Wu, Ronggang Wang<br>
 >[Arxiv](https://arxiv.org/pdf/2503.16979)|[Datasets](https://huggingface.co/datasets/yjb6/IGS_data)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
