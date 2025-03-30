@@ -4,7 +4,7 @@
 >[Arxiv](https://arxiv.org/pdf/2503.16979)|[Datasets](https://huggingface.co/datasets/yjb6/IGS_data)|[Weights](https://drive.google.com/file/d/1xh1DJ6oKUvNu-N2tWIkwdfOJv4LPAyMa/view?usp=drive_link)<br>
 > *CVPR 25* 
 
-This repository contains the official authors implementation associated with the paper: __Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene__
+This repository contains the official authors implementation associated with the paper: __Instant Gaussian Stream: Fast and Generalizable Streaming of Dynamic Scene Reconstruction via Gaussian Splatting__
 
 ## Bibtex
 ```
