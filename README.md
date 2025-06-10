@@ -22,7 +22,7 @@ This repository contains the official authors implementation associated with the
 ## Installation
 - clone
     ```
-    git clone https://github.com/yjb6/IGS.git --revursive
+    git clone https://github.com/yjb6/IGS.git --recursive
     ```
 - Python >= 3.9
 - Install `PyTorch >= 2.0.0`. We have tested on `torch2.0.0+cu118`, but other versions should also work fine.
