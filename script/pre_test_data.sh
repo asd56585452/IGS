@@ -10,7 +10,11 @@ fi
 videopath="$1"
 
 # Run the Python scripts with the provided path
-python pre_input.py --videopath "$videopath"
+echo "pre_input.py"
+python pre_input.py --videopath "$videopath" --endframe 60
+echo "my_convert.py"
 python my_convert.py -s "$videopath/colmap_0"
+echo "my_copy_cams.py"
 python my_copy_cams.py --source "$videopath/colmap_0" --scene "$videopath"
-python my_convert_frames.py -s "$videopath"
+echo "my_convert_frames.py"
+python my_convert_frames.py -s "$videopath"  --endframe 60

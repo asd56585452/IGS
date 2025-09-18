@@ -27,11 +27,13 @@ parser.add_argument("--colmap_executable", default="", type=str)
 parser.add_argument("--resize", action="store_true")
 parser.add_argument("--magick_executable", default="", type=str)
 parser.add_argument("--last_frame_id", default=299, type=int)
+parser.add_argument("--endframe", default=300, type=int)
 
 args = parser.parse_args()
 colmap_command = '"{}"'.format(args.colmap_executable) if len(args.colmap_executable) > 0 else "colmap"
 magick_command = '"{}"'.format(args.magick_executable) if len(args.magick_executable) > 0 else "magick"
 use_gpu = 1 if not args.no_gpu else 0
+endframe = args.endframe
 
 # for id in range(1,args.last_frame_id+1):
 def process(item):
@@ -96,7 +98,7 @@ def process(item):
             #     exit(exit_code)
 p = mp.Pool(100)
 res = []
-for i in tqdm(range(1,300)):
+for i in tqdm(range(1,endframe)):
     # print(i)
     item = f"colmap_{i}"
     res.append(p.apply_async(process, args=(item,)))

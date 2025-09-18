@@ -30,9 +30,9 @@ import pickle
 import sys 
 import argparse
 sys.path.append(".")
-from thirdparty.gaussian_splatting.utils.my_utils import posetow2c_matrcs, rotmat2qvec
-from thirdparty.colmap.pre_colmap import *
-from thirdparty.gaussian_splatting.helper3dg import getcolmapsinglen3d
+# from thirdparty.gaussian_splatting.utils.my_utils import posetow2c_matrcs, rotmat2qvec
+# from thirdparty.colmap.pre_colmap import *
+# from thirdparty.gaussian_splatting.helper3dg import getcolmapsinglen3d
 import multiprocessing as mp
 
 def do_system(arg):

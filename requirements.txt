@@ -1,9 +1,12 @@
+torch==2.4.1+cu124
+torchvision==0.19.1+cu124  # 請用 pip show torchvision 確認你的版本
+torchaudio==2.4.1+cu124   # 請用 pip show torchaudio 確認你的版本
 accelerate
 tensorboard
 pymeshlab
-huggingface_hub==0.25.2
-diffusers==0.24.0
-xformers==0.0.18
+huggingface_hub
+diffusers
+xformers
 jaxtyping
 omegaconf
 typeguard
@@ -16,4 +19,4 @@ icecream
 fpsample
 plyfile
 open3d
-numpy==1.26
+numpy
