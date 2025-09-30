@@ -19,3 +19,4 @@ fpsample
 plyfile
 open3d
 numpy
+trimesh

@@ -42,19 +42,28 @@ def do_system(arg):
         print("FATAL: command failed")
         sys.exit(err)
 
-def extractframes(videopath):
-    ctr=0
-    for i in range(300):
-        if os.path.exists(os.path.join(videopath.replace(".mp4", ""), str(i) + ".png")):
-            ctr += 1
-
-    if ctr == 300 or ctr == 150: # 150 for 04_truck 
-        print("already extracted all the frames, skip extracting")
-        return
+def extractframes(videopath, start_frame, end_frame):
     savepath = videopath.replace(".mp4", "")
+    
+    # Check if frames are already extracted in the 0-indexed format
+    all_frames_exist = True
+    for i in range(end_frame - start_frame):
+        if not os.path.exists(os.path.join(savepath, str(i) + ".png")):
+            all_frames_exist = False
+            break
+    if all_frames_exist:
+        print(f"Frames 0 to {end_frame - start_frame - 1} already exist in {savepath}, skipping extraction.")
+        return
+
     if not os.path.exists(savepath) :
         os.makedirs(savepath)
-    do_system(f"ffmpeg -i {videopath} -start_number 0 {savepath}/%d.png")
+
+    # Use ffmpeg to extract the specified frame range and re-index them from 0
+    # The select filter is 0-indexed and inclusive.
+    # setpts=PTS-STARTPTS resets the timestamp to make the output start from frame 0.
+    # -vsync vfr is important to handle variable frame rate videos correctly.
+    print(f"Extracting frames {start_frame} to {end_frame - 1} from {videopath} and re-indexing from 0.")
+    do_system(f"ffmpeg -i {videopath} -vf \"select='between(n,{start_frame},{end_frame-1})',setpts=PTS-STARTPTS\" -vsync vfr -start_number 0 {savepath}/%d.png")
     return
 
 
@@ -62,7 +71,7 @@ def extractframes(videopath):
 
 def preparecolmapdynerf(folder, offset=0):
     print(offset)
-    folderlist = glob.glob(folder + "cam**/")
+    folderlist = glob.glob(folder + "hd_**/")
     imagelist = []
     savedir = os.path.join(folder, "colmap_" + str(offset))
     if not os.path.exists(savedir):
@@ -70,9 +79,10 @@ def preparecolmapdynerf(folder, offset=0):
     savedir = os.path.join(savedir, "input")
     if not os.path.exists(savedir):
         os.mkdir(savedir)
-    for folder in folderlist :
-        imagepath = os.path.join(folder, str(offset) + ".png")
-        imagesavepath = os.path.join(savedir, folder.split("/")[-2] + ".png")
+    for folder_path in folderlist :
+        # The source images are now 0.png, 1.png, etc., corresponding to the offset
+        imagepath = os.path.join(folder_path, str(offset) + ".png")
+        imagesavepath = os.path.join(savedir, folder_path.split("/")[-2] + ".png")
 
         shutil.copy(imagepath, imagesavepath)
 
@@ -87,6 +97,7 @@ if __name__ == "__main__" :
     parser.add_argument("--videopath", default="", type=str)
     parser.add_argument("--startframe", default=0, type=int)
     parser.add_argument("--endframe", default=300, type=int)
+    parser.add_argument("--skip_extraction", action='store_true', help="If set, skip the frame extraction process.")
 
     args = parser.parse_args()
     videopath = args.videopath
@@ -98,8 +109,8 @@ if __name__ == "__main__" :
     if startframe >= endframe:
         print("start frame must smaller than end frame")
         quit()
-    if startframe < 0 or endframe > 300:
-        print("frame must in range 0-300")
+    if startframe < 0:
+        print("start frame cannot be negative")
         quit()
     if not os.path.exists(videopath):
         print("path not exist")
@@ -111,23 +122,25 @@ if __name__ == "__main__" :
     
     
     #### step1
-    print("start extracting 300 frames from videos")
-    videoslist = glob.glob(videopath + "*.mp4")
-    for v in tqdm.tqdm(videoslist):
-        extractframes(v)
-    print("extract frames down")
+    if not args.skip_extraction:
+        print(f"Start extracting frames from videos, range {startframe} to {endframe}")
+        videoslist = glob.glob(videopath + "*.mp4")
+        for v in tqdm.tqdm(videoslist):
+            extractframes(v, startframe, endframe) # 之前的 extractframes 函式會自動檢查，這裡再加上手動跳過更保險
+        print("Extract frames down")
+    else:
+        print("--- Skipped frame extraction as requested by the '--skip_extraction' flag. ---")
+
+
 
     
 
     # # ## step2 prepare colmap input 
     res = []
     p = mp.Pool(100)
-    for offset in range(startframe, endframe):
+    # Loop over the new, 0-indexed frame numbers
+    for offset in range(endframe - startframe):
         res.append(p.apply_async(preparecolmapdynerf, args=(videopath,offset)))
     p.close()
     p.join()
     print("prepare input down")
-
-
-
-
