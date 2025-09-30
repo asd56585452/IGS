@@ -1,6 +1,5 @@
-torch==2.4.1+cu124
-torchvision==0.19.1+cu124  # 請用 pip show torchvision 確認你的版本
-torchaudio==2.4.1+cu124   # 請用 pip show torchaudio 確認你的版本
+torchvision  # 請用 pip show torchvision 確認你的版本
+torchaudio   # 請用 pip show torchaudio 確認你的版本
 accelerate
 tensorboard
 pymeshlab
