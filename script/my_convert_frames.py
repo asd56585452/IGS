@@ -33,7 +33,6 @@ args = parser.parse_args()
 colmap_command = '"{}"'.format(args.colmap_executable) if len(args.colmap_executable) > 0 else "colmap"
 magick_command = '"{}"'.format(args.magick_executable) if len(args.magick_executable) > 0 else "magick"
 use_gpu = 1 if not args.no_gpu else 0
-endframe = args.endframe
 
 # for id in range(1,args.last_frame_id+1):
 def process(item):
@@ -98,7 +97,8 @@ def process(item):
             #     exit(exit_code)
 p = mp.Pool(100)
 res = []
-for i in tqdm(range(1,endframe)):
+# Since colmap_0 is processed separately, this loop should start from 1 to the total number of frames.
+for i in tqdm(range(1, args.endframe)):
     # print(i)
     item = f"colmap_{i}"
     res.append(p.apply_async(process, args=(item,)))

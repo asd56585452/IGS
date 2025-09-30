@@ -60,26 +60,22 @@ def extractframes(videopath):
 
 
 
-def preparecolmapdynerf(folder, offset=0):
-    print(offset)
+def preparecolmapdynerf(folder, offset=0, output_idx=0):
+    print(f"Processing frame {offset} to output index {output_idx}")
     folderlist = glob.glob(folder + "cam**/")
-    imagelist = []
-    savedir = os.path.join(folder, "colmap_" + str(offset))
+    savedir = os.path.join(folder, "colmap_" + str(output_idx))
     if not os.path.exists(savedir):
         os.mkdir(savedir)
     savedir = os.path.join(savedir, "input")
     if not os.path.exists(savedir):
         os.mkdir(savedir)
-    for folder in folderlist :
-        imagepath = os.path.join(folder, str(offset) + ".png")
-        imagesavepath = os.path.join(savedir, folder.split("/")[-2] + ".png")
-
-        shutil.copy(imagepath, imagesavepath)
-
-
-    
-
-
+    for folder_item in folderlist :
+        imagepath = os.path.join(folder_item, str(offset) + ".png")
+        imagesavepath = os.path.join(savedir, folder_item.split("/")[-2] + ".png")
+        if os.path.exists(imagepath):
+            shutil.copy(imagepath, imagesavepath)
+        else:
+            print(f"Warning: Source image not found {imagepath}")
 
 if __name__ == "__main__" :
     parser = argparse.ArgumentParser()
@@ -122,8 +118,8 @@ if __name__ == "__main__" :
     # # ## step2 prepare colmap input 
     res = []
     p = mp.Pool(100)
-    for offset in range(startframe, endframe):
-        res.append(p.apply_async(preparecolmapdynerf, args=(videopath,offset)))
+    for i, offset in enumerate(range(startframe, endframe)):
+        res.append(p.apply_async(preparecolmapdynerf, args=(videopath, offset, i)))
     p.close()
     p.join()
     print("prepare input down")
