@@ -71,7 +71,7 @@ def extractframes(videopath, start_frame, end_frame):
 
 def preparecolmapdynerf(folder, offset=0):
     print(offset)
-    folderlist = glob.glob(folder + "hd_**/")
+    folderlist = glob.glob(folder + "hd_**/")+glob.glob(folder + "cam**/")
     imagelist = []
     savedir = os.path.join(folder, "colmap_" + str(offset))
     if not os.path.exists(savedir):
