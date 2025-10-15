@@ -10,12 +10,12 @@ data:
     input_height: 512
     input_width: 512
 
-    root_dir: "/home/cgvmis418/IGS/dataset/161029_sports1"
+    root_dir: "/home/tsaichenghan/IGS/dataset/161029_sports1"
 
     gs_mode: "test"
     iter: "6000_compress"
 
-    scene_type: "panoptic"
+    scene_type: "sports"
     need_rays: True
     max_sh_degree: 3
 

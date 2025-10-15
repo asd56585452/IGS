@@ -204,6 +204,10 @@ class N3dDataset(Dataset):
             eval_vids = [0]
             input_vids = [9, 2, 3, 1]
             vids =  eval_vids + input_vids
+        elif self.cfg.scene_type == "sports":
+            eval_vids = [1]
+            input_vids = [ 11, 14, 17, 20 ]
+            vids =  eval_vids + input_vids
         cur_images = []
         next_images = []
         cur_images_resize = []
@@ -249,7 +253,16 @@ class N3dDataset(Dataset):
                 next_image_path_resize = os.path.join(next_frame_dir,  "images_512", image_name+".jpg")
      
                 depth_image_path = os.path.join(cur_frame_dir, self.cfg.gs_mode,"train",f"ours_{self.cfg.iter}","depth_expected_mm", image_name_id+".png")
+            elif self.cfg.scene_type =="sports":
+                image_name_id = str(vid).zfill(5) #need plus 1 here to get the start depth
+                image_name = cameras_data[vid]["img_name"]
 
+                depth_image_path = os.path.join(cur_frame_dir, self.cfg.gs_mode,"train",f"ours_{self.cfg.iter}","depth_expected_mm", image_name_id+".png")
+                cur_image_path = os.path.join(cur_frame_dir, "images_r2", image_name+".png")
+                next_image_path = os.path.join(next_frame_dir,  "images_r2", image_name+".png")
+                
+                cur_image_path_resize = os.path.join(cur_frame_dir, "images_512", image_name+".png")
+                next_image_path_resize = os.path.join(next_frame_dir,  "images_512", image_name+".png")
             
 
 
@@ -413,6 +426,9 @@ def process_item( idx, self):
         elif self.cfg.scene_type == "enerf":
             image_name = camera["img_name"]
             cur_image_path = os.path.join(cur_frame_dir, "images_2", image_name + ".jpg")
+        elif self.cfg.scene_type =="sports":
+            image_name = camera["img_name"]
+            cur_image_path = os.path.join(cur_frame_dir, "images_r2", image_name + ".png")
         cur_image = torch.from_numpy(np.array(Image.open(cur_image_path)) / 255.0).permute(2, 0, 1).to(torch.float)
 
         c2w = np.zeros((4, 4))
