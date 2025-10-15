@@ -37,8 +37,8 @@ def sub(i):
         torchvision.utils.save_image(images[idx], os.path.join(res_path, name))
 
 res = []
-p = mp.Pool(30)
-for path in tqdm(range(0,300)):
+p = mp.Pool(5)
+for path in tqdm(range(0,60)):
     res.append(p.apply_async(sub, args=(path,)))
 
 p.close()

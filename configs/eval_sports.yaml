@@ -1,0 +1,84 @@
+data:
+
+  data_cls: igs.data.infer_data.N3dDataset
+  data:
+    background_color: [0.0, 0.0, 0.0]
+
+    data_path: "hdVideos_total_60_interval_5.json"
+
+
+    input_height: 512
+    input_width: 512
+
+    root_dir: "/home/cgvmis418/IGS/dataset/161029_sports1"
+
+    gs_mode: "test"
+    iter: "6000_compress"
+
+    scene_type: "panoptic"
+    need_rays: True
+    max_sh_degree: 3
+
+    start_gs_path: "${data.data.root_dir}/hdVideos/colmap_0/${data.data.gs_mode}/point_cloud/iteration_${data.data.iter}/point_cloud.ply"
+
+
+opt:
+
+  lambda_lpips: 0
+  gradient_clip: 1.0
+  lambda_depth: 0
+  lambda_normal: 0.1
+
+  debug: False
+  project: "igs"
+  exp_name: "test_release"
+
+  workspace: 'logs/${opt.project}/${opt.exp_name}/test_161029_sports1_60'
+
+  resume_path: "igs"
+  resume_epoch: 15
+
+  resume: 'ckpt/${opt.resume_path}/${opt.resume_epoch}/pytorch_model.bin'
+  resume_cfg: 'ckpt/${opt.resume_path}/experiment_config.yaml'
+
+  export_mesh: false
+  eval_batch_size: 5
+
+  stream_eval: false
+  stream_eval_batch: true
+
+  refine_gs: True
+  gs_model_cls: igs.models.gaussian_model.GaussianModel
+  use_ntc: False
+  use_anchor: False
+
+  #densify 相关
+  use_densify: True
+  densify_until_iter: 100
+  densify_from_iter: 0
+  densification_interval: 20
+  densify_grad_threshold: 0.00015
+  max_num: 150000
+
+  gs_model:
+    sh_degree: 3
+  training_lr: 
+    position_lr_init : 0.0016
+    feature_lr : 0.0025
+    opacity_lr : 0.05
+    scaling_lr : 0.005
+    rotation_lr : 0.01
+
+  
+  refine_iterations: 100
+
+  lambda_l1: 0.8
+  
+  refine_item:
+    no_shs: False
+    no_opacity: False
+    no_scaling: False
+    use_mask: False
+    use_new_shs: False
+
+  free_view: False
