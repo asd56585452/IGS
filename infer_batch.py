@@ -202,13 +202,16 @@ def infer(cfg):
         if idx==0:
             start_gs = batch["gs"][0]
             print("start point num:",start_gs.get_xyz.shape[0])
+            gs_model = igs.find(cfg.opt.gs_model_cls)(cfg.opt.gs_model)
+            gs_model.load_fromstream(start_gs, cfg.opt.training_lr, refine_item=cfg.opt.refine_item, mask=big_mask)
+            gs_model.save_ply(f'{cfg.opt.workspace}/gs/{0}.ply')
             start_depth = batch["depth"]
             start_history = None
             fps = test_rendering_speed(batch)
-
         else:            
             start_depth = depth_pred.repeat(batch["cur_images_input"].shape[0],1,1,1)
-            start_gs = stream_gs
+            if batch['keyframe'][0].cpu().numpy()==1:
+                start_gs = stream_gs
             batch["depth"] = start_depth # from last
             batch["gs"] = [start_gs]
 
@@ -234,7 +237,6 @@ def infer(cfg):
         stream_gs = out["3dgs"][-1]
         mask_num.append(len(stream_gs.mask))
         points_num.append(stream_gs.get_xyz.shape[0])
-
 
 
         if cfg.opt.refine_gs:
@@ -332,11 +334,14 @@ def infer(cfg):
                 FOV = batch["FOV"][0]
 
                 cam = Camera.from_c2w(c2w, FOV, batch['resolution'][0])
+                gs_model = igs.find(cfg.opt.gs_model_cls)(cfg.opt.gs_model)
                 gs_model.load_fromstream(gs, cfg.opt.training_lr, refine_item=cfg.opt.refine_item, mask=big_mask)
 
                 render_pkg = forward_single_view(gs_model, cam, batch['background_color'][0], sh_degree=cfg.data.data.max_sh_degree)
                 render_image, depth_pred_ = render_pkg["images_pred"], render_pkg["depth_pred"]
                 free_views.append(render_image)
+
+                gs_model.save_ply(f'{cfg.opt.workspace}/gs/{idx*cfg.opt.eval_batch_size+i+1}.ply')
 
 
         perframe_times[-1]+=time.time()-start_time # add key-frame refine time to per-frame time

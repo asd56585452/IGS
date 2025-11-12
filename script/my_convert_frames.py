@@ -96,7 +96,7 @@ def process(item):
             # if exit_code != 0:
             #     logging.error(f"12.5% resize failed with code {exit_code}. Exiting.")
             #     exit(exit_code)
-p = mp.Pool(100)
+p = mp.Pool(18)
 res = []
 for i in tqdm(range(1,endframe)):
     # print(i)

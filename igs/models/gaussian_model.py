@@ -195,6 +195,10 @@ class GaussianModel:
         elif save_type=='all':
             xyz = self.get_xyz.detach().cpu().numpy()
             normals = np.zeros_like(xyz)
+            f_dc_tensor = self.get_features[:,0:1,:]
+            f_rest_tensor = self.get_features[:,1:,:]
+            self._features_dc = f_dc_tensor
+            self._features_rest = f_rest_tensor
             f_dc = self.get_features[:,0:1,:].detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
             f_rest = self.get_features[:,1:,:].detach().transpose(1, 2).flatten(start_dim=1).contiguous().cpu().numpy()
             opacities = self.inverse_opacity_activation(self.get_opacity).detach().cpu().numpy()

@@ -3,14 +3,14 @@ data:
   data_cls: igs.data.infer_data.N3dDataset
   data:
     background_color: [0.0, 0.0, 0.0]
-    data_path: "sear_steak_total_300_interval_5.json"
+    data_path: "sear_steak_total_60_interval_5.json"
 
     input_height: 512
     input_width: 512
 
-    root_dir: "/home/cgvmis418/IGS/dataset"
+    root_dir: "/home/tsaichenghan/IGS/dataset"
 
-    gs_mode: "start_gs"
+    gs_mode: "test"
     # gs_mode: "start_gs"
     iter: "6000_compress"
 
@@ -32,7 +32,7 @@ opt:
   project: "igs"
   exp_name : "test_release"
 
-  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_300'
+  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_60_5_norefine'
 
   resume_path: "igs"
   resume_epoch: 15
@@ -46,7 +46,7 @@ opt:
   stream_eval: false
   stream_eval_batch: true
 
-  refine_gs: True
+  refine_gs: False
   gs_model_cls: igs.models.gaussian_model.GaussianModel
   use_ntc: False
   use_anchor: False

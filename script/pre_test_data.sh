@@ -38,3 +38,5 @@ echo "my_copy_cams.py"
 python my_copy_cams.py --source "$videopath/colmap_0" --scene "$videopath"
 echo "my_convert_frames.py"
 python my_convert_frames.py -s "$videopath"  --endframe "$framelength"
+
+# ./pre_test_data.sh --videopath /home/tsaichenghan/IGS/dataset/flame_steak/ --startframe 0 --endframe 60 --skip_extraction
