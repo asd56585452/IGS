@@ -2,7 +2,7 @@
 
 # --- 設定 ---
 # 監控間隔（秒）
-INTERVAL=1
+INTERVAL=10
 # 紀錄 VRAM 使用量的日誌檔案名稱
 LOG_FILE="vram_usage.log"
 
@@ -30,12 +30,10 @@ echo "VRAM 監控已啟動... (每 $INTERVAL 秒記錄一次)"
 
 # 在背景執行監控迴圈
 while true; do
-    # --- 這是修改的關鍵部分 ---
     # 1. 將 nvidia-smi 的輸出存入變數
     VRAM_USED=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits)
     # 2. 使用 echo 將變數內容加上換行符後寫入檔案，確保每筆紀錄都獨立一行
     echo "$VRAM_USED" >> $LOG_FILE
-    # -------------------------
     sleep $INTERVAL
 done &
 
@@ -49,8 +47,15 @@ echo "正在執行您的指令: $YOUR_PROGRAM"
 echo "程式輸出:"
 echo "------------------------------------------"
 
+# --- [新增] 紀錄開始時間 (使用 UNIX timestamp) ---
+start_time=$(date +%s)
+
 # 執行從外部傳入的完整指令
 eval "$YOUR_PROGRAM"
+
+# --- [新增] 紀錄結束時間 並 計算總秒數 ---
+end_time=$(date +%s)
+duration=$((end_time - start_time))
 
 echo "------------------------------------------"
 echo "您的指令已執行完畢。"
@@ -82,5 +87,12 @@ END {
 }
 ' $LOG_FILE
 
+# --- [新增] 顯示總執行時間 ---
+echo "程式執行時間分析:"
+minutes=$((duration / 60))
+seconds=$((duration % 60))
+printf " - 總執行時間: %d 分 %d 秒 (共 %d 秒)\n" $minutes $seconds $duration
+
+
 # 清除日誌檔案
-rm -f $LOG_FILE
+# rm -f $LOG_FILE

@@ -3,12 +3,12 @@ data:
   data_cls: igs.data.infer_data.N3dDataset
   data:
     background_color: [0.0, 0.0, 0.0]
-    data_path: "sear_steak_total_60_interval_5.json"
+    data_path: "sear_steak_total_50_interval_5.json"
 
     input_height: 512
     input_width: 512
 
-    root_dir: "/home/tsaichenghan/IGS/dataset"
+    root_dir: "/home/cgvmis418/IGS/dataset"
 
     gs_mode: "test"
     # gs_mode: "start_gs"
@@ -32,7 +32,7 @@ opt:
   project: "igs"
   exp_name : "test_release"
 
-  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_60_5_norefine'
+  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_50_5_norefine'
 
   resume_path: "igs"
   resume_epoch: 15
