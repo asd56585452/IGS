@@ -189,6 +189,7 @@ def infer(cfg):
     pbar = tqdm(enumerate(dataloader), total = len(dataloader))
     big_mask = None
     perframe_times = []
+    AGM_times = []
 
     if model.render.cfg.sh_degree != cfg.data.data.max_sh_degree:
         # align training sh_degree to eval sh_degree
@@ -202,9 +203,10 @@ def infer(cfg):
         if idx==0:
             start_gs = batch["gs"][0]
             print("start point num:",start_gs.get_xyz.shape[0])
-            gs_model = igs.find(cfg.opt.gs_model_cls)(cfg.opt.gs_model)
-            gs_model.load_fromstream(start_gs, cfg.opt.training_lr, refine_item=cfg.opt.refine_item, mask=big_mask)
-            gs_model.save_ply(f'{cfg.opt.workspace}/gs/{0}.ply')
+            if cfg.opt.free_view:
+                gs_model = igs.find(cfg.opt.gs_model_cls)(cfg.opt.gs_model)
+                gs_model.load_fromstream(start_gs, cfg.opt.training_lr, refine_item=cfg.opt.refine_item, mask=big_mask)
+                gs_model.save_ply(f'{cfg.opt.workspace}/gs/{0}.ply')
             start_depth = batch["depth"]
             start_history = None
             fps = test_rendering_speed(batch)
@@ -223,6 +225,7 @@ def infer(cfg):
         duration = time.time()-start_time# the duration of AGM-Net inference
 
         perframe_times+=[duration/batch['images_output'].shape[0] for i in range(batch['images_output'].shape[0])]
+        AGM_times+=[duration]
 
         pred_images = out['images_pred'][:,0:1]
         out_images.extend([img for img in pred_images.detach().squeeze(1).cpu()])
@@ -353,14 +356,15 @@ def infer(cfg):
     print("avg psnrs:", np.mean(psnrs))
     total_time = pbar.format_dict['elapsed'] # use all the time, same with the paper report
     print("total time", total_time)
+    print("total_AGM_times", np.sum(np.array(AGM_times)))
     print("per frame train time:", total_time/len(psnrs))
-    result = {'psnr':{f"frame_{i+1}": psnrs[i] for i in range(len(psnrs))}, "avg":np.mean(psnrs), "total_time":total_time,"mask_num":mask_num, "points_num":points_num, "fps":fps,"per_frame_times":perframe_times}
+    result = {'psnr':{f"frame_{i+1}": psnrs[i] for i in range(len(psnrs))}, "avg":np.mean(psnrs), "total_time":total_time,"mask_num":mask_num, "points_num":points_num, "fps":fps,"per_frame_times":perframe_times,"AGM_times":AGM_times}
     resultes_path = f'{cfg.opt.workspace}/results.json'
     with open(resultes_path, 'w', encoding='utf-8') as f:
         json.dump(result, f, ensure_ascii=False,indent=4)
     os.makedirs(f'{cfg.opt.workspace}/eval_pred/', exist_ok=True)
     for idx, img in enumerate(out_images):
-        torchvision.utils.save_image(img, f'{cfg.opt.workspace}/eval_pred/train_pred_images_{idx+1}.png')
+        torchvision.utils.save_image(img, f'{cfg.opt.workspace}/eval_pred/'+'{0:05d}'.format(idx+1)+'.png')
     
     if cfg.opt.free_view:
         os.makedirs(f'{cfg.opt.workspace}/free_views/', exist_ok=True)
