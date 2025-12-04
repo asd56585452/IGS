@@ -134,19 +134,19 @@ class N3dDataset(Dataset):
         return self.free_poses
 
     def build_refine_dataset(self,eval_batch_size):
-        self.refine_items = [i for i in range(eval_batch_size,len(self.items)+1,eval_batch_size)]
-        print("building key frames: ", self.refine_items)
-        refine_dataset = {}
+        # [修改] 只生成索引列表，不進行耗時的讀取與儲存
+        self.refine_items = [i for i in range(eval_batch_size, len(self.items)+1, eval_batch_size)]
+        print("building key frames indices (Online Mode): ", self.refine_items)
         
-        with ThreadPoolExecutor() as executor:
-            futures = [executor.submit(process_item, idx, self) for idx in self.refine_items]
-            
-            for future in tqdm(as_completed(futures), total=len(futures)):
-                idx, res_dict = future.result()
-                refine_dataset.update({idx: res_dict})
-        
-        # refine_dataset["resolution"] = torch.tensor([self.cfg.output_height, self.cfg.output_width])
-        self.refine_dataset = refine_dataset
+        # 使用 set 儲存 key，方便快速查詢，但這裡不再存入巨大的影像資料
+        self.refine_dataset = set(self.refine_items)
+
+    # [新增] 這個函式用來在需要時才讀取資料
+    def get_refine_data(self, idx):
+        # 呼叫原本定義在檔案下方的 process_item 全域函式
+        # 這會讀取硬碟中的圖片並回傳 tensor
+        _, res_dict = process_item(idx, self)
+        return res_dict
 
     def __len__(self):
         return len(self.items)

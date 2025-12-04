@@ -149,7 +149,7 @@ def infer(cfg):
     dataset = igs.find(cfg.data.data_cls)(cfg.data.data,training=False)
     dataloader = DataLoader(dataset,
                         batch_size=cfg.opt.eval_batch_size, 
-                        num_workers=10, # warn hardcode
+                        num_workers=0, # warn hardcode
                         shuffle=False,#False
                         collate_fn=dataset.collate
                     )
@@ -245,7 +245,18 @@ def infer(cfg):
         if cfg.opt.refine_gs:
             # key-frame guided streaming
             start_time = time.time()
-            if ((idx+1)*cfg.opt.eval_batch_size) in dataset.refine_dataset:
+            
+            # 定義目前的 key
+            current_key = (idx+1)*cfg.opt.eval_batch_size
+
+            # [修改] 檢查 key 是否在 dataset 中 (不管是 set 還是 dict 語法都一樣)
+            if current_key in dataset.refine_dataset:
+                
+                # === [新增] Online 讀取資料: 只讀取這一組 ===
+                print(f"Loading refine data for frame {current_key}...")
+                refine_data = dataset.get_refine_data(current_key)
+                # ==========================================
+
                 with torch.enable_grad():
 
                     viewpoint_cam = None
@@ -267,14 +278,19 @@ def infer(cfg):
 
                     for iteration in range(cfg.opt.refine_iterations):
                         if not viewpoint_cam:
-                            viewpoint_cam = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["c2ws"].copy()
-                            viewpoint_img = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["images"].copy()
+                            # [修改] 從剛剛讀取的 refine_data 複製資料
+                            viewpoint_cam = refine_data["c2ws"].copy()
+                            viewpoint_img = refine_data["images"].copy()
 
+                        # [修改] 從 viewpoint_cam/img 取出資料 (這裡邏輯不變)
                         pick = randint(0, len(viewpoint_cam)-1)
                         c2w = viewpoint_cam.pop(pick).to("cuda")
                         gt_image = viewpoint_img.pop(pick).to("cuda")
-                        FOV = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["FOV"].to("cuda")
-                        bg = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["bg"].to("cuda")
+                        
+                        # [修改] 從 refine_data 讀取 FOV 和 bg
+                        FOV = refine_data["FOV"].to("cuda")
+                        bg = refine_data["bg"].to("cuda")
+
                         cam = Camera.from_c2w(c2w, FOV,  gt_image.shape[-2:])
                         if cfg.opt.use_ntc:
                             gs_model.query_ntc()
@@ -308,6 +324,11 @@ def infer(cfg):
                             gs_model.optimizer.zero_grad(set_to_none = True)
 
                     stream_gs = gs_model.convert2stream()
+                
+                # === [新增] 釋放記憶體 ===
+                del refine_data
+                torch.cuda.empty_cache() # 建議加上這行以確保 GPU/CPU 記憶體歸還
+                # =======================
 
                 c2w = batch["c2w_output"][0,0]                
                 FOV = batch["FOV"][0]
