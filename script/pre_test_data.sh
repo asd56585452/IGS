@@ -2,7 +2,7 @@
 
 # Default values
 startframe=0
-endframe=60
+endframe=300
 videopath=""
 skip_extraction_arg=""
 
