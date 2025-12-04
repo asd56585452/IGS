@@ -327,6 +327,16 @@ def infer(cfg):
                 
                 # === [新增] 釋放記憶體 ===
                 del refine_data
+                del viewpoint_cam
+                del viewpoint_img
+                # 清理迴圈變數
+                if 'render_pkg' in locals(): del render_pkg
+                if 'render_image' in locals(): del render_image
+                if 'loss' in locals(): del loss
+                if 'rgb_loss' in locals(): del rgb_loss
+                
+                import gc
+                gc.collect()
                 torch.cuda.empty_cache() # 建議加上這行以確保 GPU/CPU 記憶體歸還
                 # =======================
 
@@ -370,6 +380,19 @@ def infer(cfg):
 
         perframe_times[-1]+=time.time()-start_time # add key-frame refine time to per-frame time
         historry_state = out.get("motion_feature", None)
+        
+        # === [新增] 迴圈末尾釋放 gs_model ===
+        if 'gs_model' in locals(): del gs_model
+        
+        # [新增] 釋放 out 字典，因為它包含了很多中間變數
+        if 'out' in locals(): del out
+        
+        torch.cuda.empty_cache()
+        # ==================================
+
+        # [新增] 監控點雲數量
+        if 'stream_gs' in locals():
+             print(f"Frame {idx}: stream_gs points = {stream_gs.get_xyz.shape[0]}")
 
 
 
