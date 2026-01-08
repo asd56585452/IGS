@@ -137,7 +137,7 @@ if __name__ == "__main__" :
 
     # # ## step2 prepare colmap input 
     res = []
-    p = mp.Pool(100)
+    p = mp.Pool(1)
     # Loop over the new, 0-indexed frame numbers
     for offset in range(endframe - startframe):
         res.append(p.apply_async(preparecolmapdynerf, args=(videopath,offset)))

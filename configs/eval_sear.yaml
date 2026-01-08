@@ -8,7 +8,7 @@ data:
     input_height: 512
     input_width: 512
 
-    root_dir: "/home/tsaichenghan/IGS/dataset"
+    root_dir: "/media/cgvmis418/2TBSSD/IGS/dataset"
 
     gs_mode: "test"
     # gs_mode: "start_gs"
@@ -25,14 +25,14 @@ opt:
   lambda_depth: 0
   lambda_normal: 0.1
 
-  free_view: true
+  free_view: True
 
 
   debug: False
   project: "igs"
   exp_name : "test_release"
 
-  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_300_5_refine_nodensify'
+  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_300_5_refine_nodensify_nolr'
 
   resume_path: "igs"
   resume_epoch: 15
@@ -63,9 +63,9 @@ opt:
     sh_degree: 3
   training_lr: 
     position_lr_init : 0.0016
-    feature_lr : 0.0025
-    opacity_lr : 0.05
-    scaling_lr : 0.005
+    feature_lr : 0 #0.0025
+    opacity_lr : 0 #0.05
+    scaling_lr : 0 #0.005
     rotation_lr : 0.01
   
   refine_iterations: 50
