@@ -191,15 +191,18 @@ After extraction, the directory structure is as follows:
 #### Prepare More Dataset
 You can prepare additional data following:
 ##### Step 1: 
-Follow the [tutorial](step1-prepare-inputs) to prepare the extracted images from multi-view video.
+Follow the [tutorial](https://github.com/yjb6/IGS?tab=readme-ov-file#data-preparation) to prepare the extracted images from multi-view video.
 ##### Step 2: 
 For each frame, reconstruct the corresponding Gaussians and perform rendering. We provide a script that supports multi-GPU parallel processing for Gaussian point reconstruction, compression, and rendering. 
 **Remember to change the parameters in the code.**
 ```
+cd submodules/RaDe-GS
 python build_3dgs_dataset.py
 ```
 ##### Step 3:  
-Generate training pairs, camera groups, and bounding boxes by executing the provided [script](script/generate_train_pair.ipynb).
+Generate training pairs, camera groups by executing the provided [script](script/generate_train_pair.ipynb).
+
+Manually annotate bounding boxes (BBoxes) of a scene using visualization tools such as Open3D.
 
 ### Run
 ```
