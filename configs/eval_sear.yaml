@@ -17,7 +17,7 @@ data:
     scene_type: "n3d"
     need_rays: True
     max_sh_degree: 3
-    start_gs_path: "${data.data.root_dir}/sear_steak/colmap_0/${data.data.gs_mode}/point_cloud/iteration_${data.data.iter}/point_cloud.ply"
+    start_gs_path: "${data.data.root_dir}/sear_steak_IGS/colmap_0/${data.data.gs_mode}/point_cloud/iteration_${data.data.iter}/point_cloud.ply"
 
 opt:
   lambda_lpips: 0
@@ -32,7 +32,7 @@ opt:
   project: "igs"
   exp_name : "test_release"
 
-  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_300_5_refine_nodensify'
+  workspace: 'logs/${opt.project}/${opt.exp_name}/test_small_sear_300_5_refine_nodensify_onlychangemotion'
 
   resume_path: "igs"
   resume_epoch: 15
@@ -63,9 +63,9 @@ opt:
     sh_degree: 3
   training_lr: 
     position_lr_init : 0.0016
-    feature_lr : 0.0025
-    opacity_lr : 0.05
-    scaling_lr : 0.005
+    feature_lr : 0.0 #0.0025
+    opacity_lr : 0.0 #0.05
+    scaling_lr : 0.0 #0.005
     rotation_lr : 0.01
   
   refine_iterations: 50
