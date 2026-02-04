@@ -45,7 +45,8 @@ class Scene:
             scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval,llffhold=100) #只有第一帧为eval
         elif args.loader == "enerf":
             scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval,test_view=17) #只有第一帧为eval
-
+        elif args.loader == "HiFi4G":
+            scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval,llffhold=8) #只有第一帧为eval
         elif os.path.exists(os.path.join(args.source_path, "sparse")):
             scene_info = sceneLoadTypeCallbacks["Colmap"](args.source_path, args.images, args.eval)
         elif os.path.exists(os.path.join(args.source_path, "transforms_train.json")):
