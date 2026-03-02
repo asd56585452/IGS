@@ -26,18 +26,17 @@ def sub(i):
     images = []
     image_names = []
     for name in os.listdir(image_path):
-        if name.endswith('.png'):
+        if name.endswith('.png') or name.endswith('.jpg'):
             image_name = os.path.join(image_path, name)
             image_data = torch.from_numpy(np.array(Image.open(image_name))/255.0).permute(2,0,1).to(torch.float)
-            images.append(image_data)
-            image_names.append(name)
-    images = torch.stack(images, dim=0)
-    images = F.interpolate(images, size=(512, 512), mode='bilinear', align_corners=False)
-    for idx, name in enumerate(image_names):
-        torchvision.utils.save_image(images[idx], os.path.join(res_path, name))
+            # Process individually to handle variable sizes
+            image_data = image_data.unsqueeze(0) # Add batch dim for interpolate
+            image_data = F.interpolate(image_data, size=(512, 512), mode='bilinear', align_corners=False)
+            image_data = image_data.squeeze(0) # Remove batch dim
+            torchvision.utils.save_image(image_data, os.path.join(res_path, name))
 
 res = []
-p = mp.Pool(30)
+p = mp.Pool(5)
 for path in tqdm(range(0,300)):
     res.append(p.apply_async(sub, args=(path,)))
 

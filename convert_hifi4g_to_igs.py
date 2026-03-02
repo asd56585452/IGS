@@ -16,8 +16,8 @@ def convert_hifi4g_to_igs(base_dir):
         base_dir/colmap_{frame}/image/{cam_num}.png (symlink to images)
     """
     base_path = Path(base_dir)
-    images_root = base_path / "images"
-    sparse_source = base_path / "sparse" / "0"
+    images_root = base_path / "image_white_undistortion"
+    sparse_source = base_path / "image_white_undistortion" / "colmap" / "sparse" / "0"
     
     if not images_root.exists():
         print(f"Error: Images root not found at {images_root}")
@@ -29,8 +29,8 @@ def convert_hifi4g_to_igs(base_dir):
 
     # Get all frame directories (e.g., '30', '45', etc.)
     # We look for directories in the images folder
-    frame_dirs = [d for d in images_root.iterdir() if d.is_dir()]
-    frame_dirs = sorted(frame_dirs, key=lambda x: int(x.name) if x.name.isdigit() else x.name)
+    frame_dirs = [d for d in images_root.iterdir() if d.is_dir() and d.name.isdigit()]
+    frame_dirs = sorted(frame_dirs, key=lambda x: int(x.name))
     
     print(f"Found {len(frame_dirs)} frames to process.")
     
@@ -93,5 +93,5 @@ def convert_hifi4g_to_igs(base_dir):
     print("Conversion complete.")
 
 if __name__ == "__main__":
-    dataset_path = "/home/tsaichenghan/IGS/dataset/hifi4g"
+    dataset_path = "/home/tsaichenghan/IGS/dataset/4K_Actor1_Greeting"
     convert_hifi4g_to_igs(dataset_path)

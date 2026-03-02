@@ -204,6 +204,11 @@ class N3dDataset(Dataset):
             eval_vids = [0]
             input_vids = [9, 2, 3, 1]
             vids =  eval_vids + input_vids
+        elif self.cfg.scene_type == "hifi4g":
+            # eval_vids = [c for c in range(0,len(cameras_data),8)]
+            eval_vids = [0]
+            input_vids = [2,8,16,22]
+            vids =  eval_vids + input_vids
         cur_images = []
         next_images = []
         cur_images_resize = []
@@ -233,6 +238,20 @@ class N3dDataset(Dataset):
                 next_image_path_resize = os.path.join(next_frame_dir,  "images_512", image_name+".png")
      
                 depth_image_path = os.path.join(cur_frame_dir, self.cfg.gs_mode,"train",f"ours_{self.cfg.iter}","depth_expected_mm", image_name_id+".png")
+            elif self.cfg.scene_type == "hifi4g":
+                image_name = cameras_data[vid]["img_name"]
+
+                cur_image_path = os.path.join(cur_frame_dir, "images_r2", image_name+".png")
+                next_image_path = os.path.join(next_frame_dir,  "images_r2", image_name+".png")
+                cur_image_path_resize = os.path.join(cur_frame_dir, "images_512", image_name+".png")
+                next_image_path_resize = os.path.join(next_frame_dir,  "images_512", image_name+".png")
+                if vid in input_vids:
+                    image_name_id = str(vid-vid//8-1).zfill(5) 
+                    depth_image_path = os.path.join(cur_frame_dir, self.cfg.gs_mode,"train",f"ours_{self.cfg.iter}","depth_expected_mm", image_name_id+".png")
+                elif vid in eval_vids:
+                    image_name_id = str(vid//8).zfill(5) 
+                    depth_image_path = os.path.join(cur_frame_dir, self.cfg.gs_mode,"test",f"ours_{self.cfg.iter}","depth_expected_mm", image_name_id+".png")
+    
 
             elif self.cfg.scene_type == "enerf":
 
@@ -259,12 +278,14 @@ class N3dDataset(Dataset):
             cur_image_resize = torch.from_numpy(np.array(Image.open(cur_image_path_resize))/255.0).permute(2,0,1).to(torch.float)
             next_image_resize = torch.from_numpy(np.array(Image.open(next_image_path_resize))/255.0).permute(2,0,1).to(torch.float)
                    
+            # Resize depth to input_height/width to ensure they can be stacked
             if need_depth:
                 depth_image = torch.from_numpy(np.array(Image.open(depth_image_path))/1000.0).to(torch.float)
+                # Resize depth to input size (e.g. 512x512)
+                depth_image = depth_image.unsqueeze(0).unsqueeze(0)
+                depth_image = F.interpolate(depth_image, size=(self.cfg.input_height, self.cfg.input_width), mode='nearest')
+                depth_image = depth_image.squeeze(0).squeeze(0)
                 depth_images.append(depth_image)
-
-
-
 
             c2w = np.zeros((4, 4))
             c2w[:3,:3] = np.array(cameras_data[vid]["rotation"])
@@ -279,20 +300,34 @@ class N3dDataset(Dataset):
 
             FovX = focal2fov(fx, width)
             FovY = focal2fov(fy, height)
+            
+            if 'batch_FOVs' not in locals():
+                batch_FOVs = []
+            batch_FOVs.append(torch.tensor([FovX, FovY], dtype=torch.float32))
 
-            cur_images.append(cur_image)
-            next_images.append(next_image)
+            if vid in eval_vids:
+                cur_images.append(cur_image) # Only append high-res for eval views
+                next_images.append(next_image)
+            
             cur_images_resize.append(cur_image_resize)
             next_images_resize.append(next_image_resize)
             c2ws.append(c2w)
-        cur_images = torch.stack(cur_images, dim=0) # [V, C, H, W]
-        next_images = torch.stack(next_images, dim=0) # [V,C, H, W]
-        cur_images_resize = torch.stack(cur_images_resize, dim=0) # [V, C, H, W]
-        next_images_resize = torch.stack(next_images_resize, dim=0) # [V,C, H, W]   
+        
+        batch_FOVs = torch.stack(batch_FOVs, dim=0)
+        
+        # Don't stack cur_images/next_images yet as they might only contain eval views (and might still diff if multiple eval)
+        # But we assume eval_vids usually has 1 view or views of same resolution if stacked.
+        # If eval_vids has 1 view, stack is fine (dim 0 = 1).
+        if len(cur_images) > 0:
+            cur_images = torch.stack(cur_images, dim=0) # [V_eval, C, H, W]
+            next_images = torch.stack(next_images, dim=0) # [V_eval, C, H, W]
+        
+        cur_images_resize = torch.stack(cur_images_resize, dim=0) # [V_all, C, H, W]
+        next_images_resize = torch.stack(next_images_resize, dim=0) # [V_all, C, H, W]   
 
         if need_depth:
             depth_images = torch.stack(depth_images, dim=0)
-
+            
         c2ws = torch.stack(c2ws, dim=0) # [V, 4, 4]
 
 
@@ -302,7 +337,7 @@ class N3dDataset(Dataset):
 
 
         if need_depth:
-            depth_images_input = depth_images[1:].clone()
+            depth_images_input = depth_images[len(eval_vids):].clone()
             results["depth"] = depth_images_input
 
         if idx ==0:
@@ -311,9 +346,9 @@ class N3dDataset(Dataset):
         else:
             results["gs_path"] = ""
 
-        cur_images_input = cur_images_resize[1:].clone()
-        next_images_input = next_images_resize[1:].clone()
-        c2ws_input = c2ws[1:].clone()
+        cur_images_input = cur_images_resize[len(eval_vids):].clone()
+        next_images_input = next_images_resize[len(eval_vids):].clone()
+        c2ws_input = c2ws[len(eval_vids):].clone()
 
         if cur_images_input != None:
             results['cur_images_input'] = cur_images_input # [2,V, C, output_size, output_size]     
@@ -327,7 +362,8 @@ class N3dDataset(Dataset):
         results['c2w_output'] = c2ws #只需要输出第一个就行
         results['c2w_input'] = c2ws_input
 
-        results['FOV'] = torch.tensor([FovX, FovY], dtype=torch.float32)
+        results['FOVs'] = batch_FOVs
+        results['FOV'] = batch_FOVs[0] # backward compatible, use first one if just picking 1
         results["background_color"] = self.background_color
 
         output_height, output_width = next_images.shape[-2:]
@@ -346,28 +382,33 @@ class N3dDataset(Dataset):
             W = int(self.cfg.input_width / 8)
             if self.cfg.up_sample:
                 H, W = H*2, W*2
-            fx , fy = fov2focal(FovX, W), fov2focal(FovY, H) 
-            i, j = torch.meshgrid(
-                torch.arange(W, dtype=torch.float32) + 0.5,
-                torch.arange(H, dtype=torch.float32) + 0.5,
-                indexing="xy",
-            )
 
-            directions: Float[Tensor, "H W 3"] = torch.stack(
-                [(i - W/2) / fx, (j - H/2) / fy, torch.ones_like(i)], -1
-            )
-            directions = F.normalize(directions, p=2.0, dim=-1)
-            results["local_rays"] = directions #local dir
+            local_rays_list = []
+            global_rays_list = []
+            
+            for idx in range(len(c2ws_input)):
+                fx, fy = fov2focal(batch_FOVs[idx][0], W), fov2focal(batch_FOVs[idx][1], H) 
+                i, j = torch.meshgrid(
+                    torch.arange(W, dtype=torch.float32) + 0.5,
+                    torch.arange(H, dtype=torch.float32) + 0.5,
+                    indexing="xy",
+                )
 
-            #take c2w
+                directions: Float[Tensor, "H W 3"] = torch.stack(
+                    [(i - W/2) / fx, (j - H/2) / fy, torch.ones_like(i)], -1
+                )
+                directions = F.normalize(directions, p=2.0, dim=-1)
+                local_rays_list.append(directions)
 
-            dirs = c2ws_input[:,:3,:3]@ directions.view(-1,3).permute(1,0).unsqueeze(0)
+                # take c2w
+                c2w_in = c2ws_input[idx]
+                dirs = c2w_in[:3,:3] @ directions.view(-1,3).permute(1,0)
+                ori = c2w_in[:3,3].unsqueeze(-1).repeat_interleave(int(H*W), dim=-1)
+                rays = torch.cat([ori, dirs], dim=0) # [6, H*W]
+                global_rays_list.append(rearrange(rays, "D (H W) -> H W D", H=H))
 
-            ori = c2ws_input[:,:3,3].unsqueeze(-1).repeat_interleave(int(H*W), dim=-1)
-
-            rays = torch.cat([ori, dirs], dim=1)
-            rays = rearrange(rays, " B D (H W) -> B H W D",H=H)
-            results["rays"] = rays
+            results["local_rays"] = torch.stack(local_rays_list, dim=0) # [V, H, W, 3]
+            results["rays"] = torch.stack(global_rays_list, dim=0) # [V, H, W, 6]
 
         return results
 
@@ -410,6 +451,9 @@ def process_item( idx, self):
         elif self.cfg.scene_type == "meet":
             image_name = camera["img_name"]
             cur_image_path = os.path.join(cur_frame_dir, "images", image_name + ".png")
+        elif self.cfg.scene_type == "hifi4g":
+            image_name = camera["img_name"]
+            cur_image_path = os.path.join(cur_frame_dir, "images_r2", image_name + ".png")
         elif self.cfg.scene_type == "enerf":
             image_name = camera["img_name"]
             cur_image_path = os.path.join(cur_frame_dir, "images_2", image_name + ".jpg")
@@ -431,10 +475,16 @@ def process_item( idx, self):
 
         cur_images.append(cur_image)
         c2ws.append(c2w)
+        
+        # We need to maintain a FOV per camera
+        if 'FOVs' not in locals():
+            FOVs = []
+        FOVs.append(torch.tensor([FovX, FovY], dtype=torch.float32))
     
-    FOV = torch.tensor([FovX, FovY], dtype=torch.float32)
+    FOVs = torch.stack(FOVs, dim=0)
+    FOV = FOVs[0] # backward compatibility for anything expecting a single FOV
     bg_color = self.background_color
-    res_dict = {"images": cur_images, "c2ws": c2ws, "FOV": FOV, "bg": bg_color}
+    res_dict = {"images": cur_images, "c2ws": c2ws, "FOV": FOV, "FOVs": FOVs, "bg": bg_color}
     
     return idx, res_dict
 

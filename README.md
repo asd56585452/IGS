@@ -87,6 +87,13 @@ Use this [script](script/video.ipynb) to convert the rendered images into a vide
 ## Streaming Reconstruction
 
 ### Data Preparation
+
+#### Step 0: Convert HiFi4G Data to IGS Format
+
+```sh
+python convert_hifi4g_to_igs.py
+```
+
 #### Step 1: Prepare Inputs
 <a name="step1-prepare-inputs"></a>
 We can prepare our streaming dataset following 3DGStream and SpacetimeGaussian, and here we provide a simple script.
@@ -120,6 +127,12 @@ cd submodules/RaDe-GS
 ./train.sh
 cd -
 ```
+
+#### Step 2.5: Compute BBox
+```sh
+python compute_bbox.py
+```
+
 #### Step 3: Downsize the Image  
 Resize the images to 512x512 for processing by AGM-Net.  
 ```sh

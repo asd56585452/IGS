@@ -264,11 +264,12 @@ def infer(cfg):
                         if not viewpoint_cam:
                             viewpoint_cam = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["c2ws"].copy()
                             viewpoint_img = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["images"].copy()
+                            viewpoint_FOV = [(f.to("cuda") if isinstance(f, torch.Tensor) else f) for f in dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["FOVs"]]
 
                         pick = randint(0, len(viewpoint_cam)-1)
                         c2w = viewpoint_cam.pop(pick).to("cuda")
                         gt_image = viewpoint_img.pop(pick).to("cuda")
-                        FOV = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["FOV"].to("cuda")
+                        FOV = viewpoint_FOV.pop(pick)
                         bg = dataset.refine_dataset[(idx+1)*cfg.opt.eval_batch_size]["bg"].to("cuda")
                         cam = Camera.from_c2w(c2w, FOV,  gt_image.shape[-2:])
                         if cfg.opt.use_ntc:
@@ -279,6 +280,12 @@ def infer(cfg):
                         render_image, radii, visibility_filter, viewspace_point_tensor = render_pkg["images_pred"], render_pkg["radii"], render_pkg["visibility_filter"], render_pkg["viewspace_points"]
                         psnr = -10 * torch.log10(torch.mean((render_image.detach() - gt_image) ** 2))
                         Ll1_render = l1_loss(render_image, gt_image)
+                        
+                        if iteration < 5 and idx == 1:
+                            debug_dir = os.path.join(cfg.opt.workspace, "debug_renders")
+                            os.makedirs(debug_dir, exist_ok=True)
+                            torchvision.utils.save_image(render_image, os.path.join(debug_dir, f"render_iter_{iteration}.png"))
+                            torchvision.utils.save_image(gt_image, os.path.join(debug_dir, f"gt_iter_{iteration}.png"))
 
                         rgb_loss = cfg.opt.lambda_l1 * Ll1_render +(1-cfg.opt.lambda_l1) * (1.0 - ssim(render_image, gt_image.unsqueeze(0), size_average=False))
                         loss = rgb_loss
@@ -305,7 +312,7 @@ def infer(cfg):
                     stream_gs = gs_model.convert2stream()
 
                 c2w = batch["c2w_output"][0,0]                
-                FOV = batch["FOV"][0]
+                FOV = batch["FOVs"][0,0]
 
                 cam = Camera.from_c2w(c2w, FOV, batch['resolution'][0])
                 render_pkg = forward_single_view(gs_model, cam, batch['background_color'][0], sh_degree=cfg.data.data.max_sh_degree)
@@ -329,7 +336,7 @@ def infer(cfg):
                 # c2w = batch["c2w_output"][0,0]                
 
                 # print(c2w)
-                FOV = batch["FOV"][0]
+                FOV = batch["FOVs"][0,0]
 
                 cam = Camera.from_c2w(c2w, FOV, batch['resolution'][0])
                 gs_model.load_fromstream(gs, cfg.opt.training_lr, refine_item=cfg.opt.refine_item, mask=big_mask)
